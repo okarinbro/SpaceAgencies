@@ -1,4 +1,5 @@
 import com.google.common.collect.ImmutableList;
+import model.Shipper;
 
 import java.io.BufferedReader;
 import java.io.IOException;

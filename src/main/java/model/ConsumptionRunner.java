@@ -1,3 +1,5 @@
+package model;
+
 import com.google.common.base.Function;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;

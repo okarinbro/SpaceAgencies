@@ -1,6 +1,7 @@
+package model;
+
 import com.google.common.base.Preconditions;
 import com.rabbitmq.client.*;
-
 
 import java.io.IOException;
 import java.util.List;
@@ -12,13 +13,13 @@ public class Shipper {
     private final String exchangeName;
 
     //todo: send message back
-    Shipper(List<String> serviceTypes, String exchangeName) {
+    public Shipper(List<String> serviceTypes, String exchangeName) {
         this.serviceTypes = serviceTypes;
         this.exchangeName = exchangeName;
     }
 
     public void init() throws IOException, TimeoutException {
-        Preconditions.checkState(serviceTypes.size() == 2, "Shipper handles exactly 2 service types");
+        Preconditions.checkState(serviceTypes.size() == 2, "model.Shipper handles exactly 2 service types");
         for (String serviceType : serviceTypes) {
             handleService(serviceType, exchangeName);
         }
@@ -68,7 +69,7 @@ public class Shipper {
                 String agencyName = split[0];
                 String orderId = split[1];
                 String serviceType = split[2];
-                System.out.println(String.format("Agency name: %s; service type: %s", agencyName, serviceType));
+                System.out.println(String.format("model.Agency name: %s; service type: %s", agencyName, serviceType));
                 channel.basicPublish(exchangeName, agencyName, null, orderId.getBytes("UTF-8"));
             }
         };

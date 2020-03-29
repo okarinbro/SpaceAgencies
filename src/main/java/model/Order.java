@@ -1,3 +1,5 @@
+package model;
+
 import com.google.common.base.Objects;
 
 public class Order {

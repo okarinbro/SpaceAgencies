@@ -1,11 +1,10 @@
-import com.google.common.base.Function;
-import com.rabbitmq.client.*;
+package model;
 
+import com.rabbitmq.client.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.SQLOutput;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -17,7 +16,7 @@ public class Agency {
     private final String agencyName;
     private final String exchangeName;
 
-    Agency(String agencyName, String exchangeName) {
+    public Agency(String agencyName, String exchangeName) {
         this.agencyName = agencyName;
         this.exchangeName = exchangeName;
     }

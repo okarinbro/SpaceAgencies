@@ -1,3 +1,5 @@
+package model;
+
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Arrays;
