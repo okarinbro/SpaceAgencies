@@ -19,17 +19,18 @@ public class Administrator {
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
-        channel.exchangeDeclare(commonExchangeName, BuiltinExchangeType.TOPIC);
-        String queueName = channel.queueDeclare().getQueue();
-        channel.queueBind(queueName, commonExchangeName, "#");
+        String adminQueue = "adminQueue";
+        ConsumptionRunner.startConsuming(channel, adminQueue, commonExchangeName, this::createConsumer, true);
 
-        Consumer consumer = new DefaultConsumer(channel) {
+    }
+
+    private Consumer createConsumer(Channel channel) {
+        return new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
                 System.out.println("Received copy of message: " + message);
             }
         };
-        channel.basicConsume(queueName, true, consumer);
     }
 }
