@@ -22,17 +22,13 @@ public class Agency {
     }
 
     public void init() throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
+        Channel channel = ChannelFactory.createSimpleChannel();
         channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
-
         ConsumptionRunner.startConsuming(channel, agencyName, exchangeName, this::createConsumer, true);
+        handleUserInput(channel);
+    }
 
-
-
-
+    private void handleUserInput(Channel channel) throws IOException {
         while (true) {
             System.out.println("Type service type below (ct, pt, st)");
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -41,7 +37,6 @@ public class Agency {
             tasksInProgress.add(order);
             orderService(channel, exchangeName, order);
         }
-
     }
 
 

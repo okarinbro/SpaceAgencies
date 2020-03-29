@@ -26,20 +26,11 @@ public class Shipper {
     }
 
     private void handleService(String serviceType, String exchangeName) throws IOException, TimeoutException {
-        Channel channel = createChannel(exchangeName);
+        Channel channel = ChannelFactory.createQosChannel();
+        channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
         String queueName = ServiceType.fromString(serviceType).toString();
         Consumer consumer = ConsumptionRunner.startConsuming(channel, queueName, exchangeName, this::createConsumer, false);
         channel.basicConsume(queueName, false, consumer);
-    }
-
-    private Channel createChannel(String exchangeName) throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
-        channel.basicQos(1);
-        channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
-        return channel;
     }
 
     private Consumer createConsumer(final Channel channel) {

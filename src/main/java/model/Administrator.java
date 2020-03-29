@@ -17,7 +17,7 @@ public class Administrator {
     }
 
     public void init() throws IOException, TimeoutException {
-        Channel channel = createChannel();
+        Channel channel = ChannelFactory.createSimpleChannel();
         String adminQueue = "adminQueue";
         ConsumptionRunner.startConsuming(channel, adminQueue, commonExchangeName, this::createConsumer, true);
         channel.exchangeDeclare(administrativeExchangeName, BuiltinExchangeType.TOPIC);
@@ -25,13 +25,6 @@ public class Administrator {
         handleUserInput(channel);
         return;
 
-    }
-
-    private Channel createChannel() throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        Connection connection = factory.newConnection();
-        return connection.createChannel();
     }
 
     private void handleUserInput(Channel channel) throws IOException {
