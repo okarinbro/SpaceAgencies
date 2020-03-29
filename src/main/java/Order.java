@@ -9,6 +9,10 @@ public class Order {
         this.serviceType = ServiceType.fromString(serviceType);
     }
 
+    public String createMessage() {
+        return orderId + "###" + serviceType;
+    }
+
     public String getOrderId() {
         return orderId;
     }

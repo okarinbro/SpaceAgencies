@@ -4,6 +4,7 @@ import com.rabbitmq.client.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
 public class Shipper {
@@ -46,11 +47,29 @@ public class Shipper {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
                 System.out.println("Received order: " + message);
+                workHard();
+                sendConfirmation(message);
                 channel.basicAck(envelope.getDeliveryTag(), false);
-                String agencyName = message.split("###")[0];
-                System.out.println("Agency name: " + agencyName);
-                channel.basicPublish(exchangeName, agencyName, null, message.getBytes("UTF-8"));
 
+            }
+
+            //it's just for testing QoS in development phase
+            //todo: get rid of that in the future
+            private void workHard() {
+                try {
+                    Thread.sleep(1000 * new Random().nextInt(10));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            private void sendConfirmation(String message) throws IOException {
+                String[] split = message.split("###");
+                String agencyName = split[0];
+                String orderId = split[1];
+                String serviceType = split[2];
+                System.out.println(String.format("Agency name: %s; service type: %s", agencyName, serviceType));
+                channel.basicPublish(exchangeName, agencyName, null, orderId.getBytes("UTF-8"));
             }
         };
     }

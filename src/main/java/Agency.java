@@ -5,6 +5,7 @@ import com.rabbitmq.client.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.SQLOutput;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -31,6 +32,7 @@ public class Agency {
         ConsumptionRunner.startConsuming(channel, agencyName, exchangeName, this::createConsumer);
 
         while (true) {
+            System.out.println("Type service type below (ct, pt, st)");
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             String serviceType = br.readLine();
             Order order = new Order(agencyName, UUID.randomUUID().toString(), serviceType);
@@ -53,6 +55,6 @@ public class Agency {
     }
 
     private void orderService(Channel channel, String exchangeName, Order order) throws IOException {
-        channel.basicPublish(exchangeName, order.getServiceType().toString(), null, order.getOrderId().getBytes("UTF-8"));
+        channel.basicPublish(exchangeName, order.getServiceType().toString(), null, order.createMessage().getBytes("UTF-8"));
     }
 }

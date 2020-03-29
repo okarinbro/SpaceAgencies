@@ -10,7 +10,6 @@ public class ConsumptionRunner {
         channel.queueDeclare(queueName, false, false, false, null);
         channel.queueBind(queueName, exchangeName, queueName);
         Consumer consumer = createConsumer.apply(channel);
-        channel.basicConsume(queueName, false, consumer);
         return consumer;
     }
 }
