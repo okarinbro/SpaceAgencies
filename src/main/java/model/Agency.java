@@ -10,21 +10,25 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeoutException;
 
-public class Agency {
+public class Agency extends AdministrationUnit {
     //todo: handle threads better than copyonwrite ;)
+    private final static String ADMIN_AGENCY_ROUTING_KEY = "*.agency";
     private final Set<Order> tasksInProgress = new CopyOnWriteArraySet<Order>();
     private final String agencyName;
     private final String exchangeName;
+    private final String administrativeExchangeName;
 
-    public Agency(String agencyName, String exchangeName) {
+    public Agency(String agencyName, String exchangeName, String administrativeExchangeName) {
         this.agencyName = agencyName;
         this.exchangeName = exchangeName;
+        this.administrativeExchangeName = administrativeExchangeName;
     }
 
     public void init() throws IOException, TimeoutException {
         Channel channel = ChannelFactory.createSimpleChannel();
         channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
-        ConsumptionRunner.startConsuming(channel, agencyName, exchangeName, this::createConsumer, true);
+        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(agencyName, exchangeName, agencyName), this::createConsumer);
+        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(agencyName, administrativeExchangeName, ADMIN_AGENCY_ROUTING_KEY), this::createAdministrativeConsumer);
         handleUserInput(channel);
     }
 
@@ -38,7 +42,6 @@ public class Agency {
             orderService(channel, exchangeName, order);
         }
     }
-
 
     private Consumer createConsumer(Channel channel) {
         return new DefaultConsumer(channel) {

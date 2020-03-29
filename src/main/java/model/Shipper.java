@@ -8,28 +8,33 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
-public class Shipper {
+public class Shipper extends AdministrationUnit {
+    private final static String ADMIN_SHIPPER_ROUTING_KEY = "shipper.*";
     private final List<String> serviceTypes;
     private final String exchangeName;
+    private final String administrativeExchangeName;
 
     //todo: send message back
-    public Shipper(List<String> serviceTypes, String exchangeName) {
+    public Shipper(List<String> serviceTypes, String exchangeName, String administrativeExchangeName) {
         this.serviceTypes = serviceTypes;
         this.exchangeName = exchangeName;
+        this.administrativeExchangeName = administrativeExchangeName;
     }
 
     public void init() throws IOException, TimeoutException {
-        Preconditions.checkState(serviceTypes.size() == 2, "model.Shipper handles exactly 2 service types");
-        for (String serviceType : serviceTypes) {
-            handleService(serviceType, exchangeName);
-        }
-    }
-
-    private void handleService(String serviceType, String exchangeName) throws IOException, TimeoutException {
         Channel channel = ChannelFactory.createQosChannel();
         channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
+        Preconditions.checkState(serviceTypes.size() == 2, "model.Shipper handles exactly 2 service types");
+        for (String serviceType : serviceTypes) {
+            handleService(channel, serviceType, exchangeName);
+        }
+        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings("shipper", administrativeExchangeName, "shipper.*"), this::createAdministrativeConsumer);
+
+    }
+
+    private void handleService(Channel channel, String serviceType, String exchangeName) throws IOException {
         String queueName = ServiceType.fromString(serviceType).toString();
-        Consumer consumer = ConsumptionRunner.startConsuming(channel, queueName, exchangeName, this::createConsumer, false);
+        Consumer consumer = ConsumptionRunner.startConsumingWithoutAutoAck(channel, new ConsumeSettings(queueName, exchangeName, queueName), this::createConsumer);
         channel.basicConsume(queueName, false, consumer);
     }
 

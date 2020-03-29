@@ -19,7 +19,7 @@ public class Administrator {
     public void init() throws IOException, TimeoutException {
         Channel channel = ChannelFactory.createSimpleChannel();
         String adminQueue = "adminQueue";
-        ConsumptionRunner.startConsuming(channel, adminQueue, commonExchangeName, this::createConsumer, true);
+        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(adminQueue, commonExchangeName, "#"), this::createConsumer);
         channel.exchangeDeclare(administrativeExchangeName, BuiltinExchangeType.TOPIC);
 
         handleUserInput(channel);
