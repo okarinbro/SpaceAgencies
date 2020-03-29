@@ -2,7 +2,9 @@ package model;
 
 import com.rabbitmq.client.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.concurrent.TimeoutException;
 
 public class Administrator {
@@ -15,13 +17,33 @@ public class Administrator {
     }
 
     public void init() throws IOException, TimeoutException {
+        Channel channel = createChannel();
+        String adminQueue = "adminQueue";
+        ConsumptionRunner.startConsuming(channel, adminQueue, commonExchangeName, this::createConsumer, true);
+        channel.exchangeDeclare(administrativeExchangeName, BuiltinExchangeType.TOPIC);
+
+        handleUserInput(channel);
+        return;
+
+    }
+
+    private Channel createChannel() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
-        String adminQueue = "adminQueue";
-        ConsumptionRunner.startConsuming(channel, adminQueue, commonExchangeName, this::createConsumer, true);
+        return connection.createChannel();
+    }
 
+    private void handleUserInput(Channel channel) throws IOException {
+        while (true) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+                System.out.print(">");
+                String message = br.readLine();
+                System.out.println("shipper.agency | .agency | shipper.");
+                String key = br.readLine();
+                channel.basicPublish(administrativeExchangeName, key, null, message.getBytes("UTF-8"));
+            }
+        }
     }
 
     private Consumer createConsumer(Channel channel) {
@@ -33,4 +55,6 @@ public class Administrator {
             }
         };
     }
+
+
 }
