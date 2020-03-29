@@ -28,7 +28,10 @@ public class Agency {
         Channel channel = connection.createChannel();
         channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
 
-        ConsumptionRunner.startConsuming(channel, agencyName, exchangeName, this::createConsumer);
+        ConsumptionRunner.startConsuming(channel, agencyName, exchangeName, this::createConsumer, true);
+
+
+
 
         while (true) {
             System.out.println("Type service type below (ct, pt, st)");

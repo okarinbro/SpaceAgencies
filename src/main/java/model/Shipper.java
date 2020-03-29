@@ -28,7 +28,7 @@ public class Shipper {
     private void handleService(String serviceType, String exchangeName) throws IOException, TimeoutException {
         Channel channel = createChannel(exchangeName);
         String queueName = ServiceType.fromString(serviceType).toString();
-        Consumer consumer = ConsumptionRunner.startConsuming(channel, queueName, exchangeName, this::createConsumer);
+        Consumer consumer = ConsumptionRunner.startConsuming(channel, queueName, exchangeName, this::createConsumer, false);
         channel.basicConsume(queueName, false, consumer);
     }
 
