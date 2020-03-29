@@ -6,6 +6,7 @@ import com.rabbitmq.client.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 public class Shipper extends AdministrationUnit {
@@ -24,11 +25,12 @@ public class Shipper extends AdministrationUnit {
     public void init() throws IOException, TimeoutException {
         Channel channel = ChannelFactory.createQosChannel();
         channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
+        channel.exchangeDeclare(administrativeExchangeName, BuiltinExchangeType.TOPIC);
         Preconditions.checkState(serviceTypes.size() == 2, "model.Shipper handles exactly 2 service types");
         for (String serviceType : serviceTypes) {
             handleService(channel, serviceType, exchangeName);
         }
-        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings("shipper", administrativeExchangeName, "shipper.*"), this::createAdministrativeConsumer);
+        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(UUID.randomUUID().toString(), administrativeExchangeName, "shipper.*"), this::createAdministrativeConsumer);
 
     }
 

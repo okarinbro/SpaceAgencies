@@ -27,8 +27,9 @@ public class Agency extends AdministrationUnit {
     public void init() throws IOException, TimeoutException {
         Channel channel = ChannelFactory.createSimpleChannel();
         channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
+        channel.exchangeDeclare(administrativeExchangeName, BuiltinExchangeType.TOPIC);
         ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(agencyName, exchangeName, agencyName), this::createConsumer);
-        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(agencyName, administrativeExchangeName, ADMIN_AGENCY_ROUTING_KEY), this::createAdministrativeConsumer);
+        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(UUID.randomUUID().toString(), administrativeExchangeName, ADMIN_AGENCY_ROUTING_KEY), this::createAdministrativeConsumer);
         handleUserInput(channel);
     }
 

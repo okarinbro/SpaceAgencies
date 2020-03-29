@@ -5,9 +5,9 @@ import java.util.concurrent.TimeoutException;
 
 public class AdministratorRunner {
     public static void main(String[] args) {
-        Administrator administrator = new Administrator("admin",
-                "exchange1");
         try {
+            Administrator administrator = new Administrator("adminExchange",
+                    "exchange1");
             administrator.init();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();

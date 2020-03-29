@@ -19,8 +19,9 @@ public class Administrator {
     public void init() throws IOException, TimeoutException {
         Channel channel = ChannelFactory.createSimpleChannel();
         String adminQueue = "adminQueue";
-        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(adminQueue, commonExchangeName, "#"), this::createConsumer);
         channel.exchangeDeclare(administrativeExchangeName, BuiltinExchangeType.TOPIC);
+        channel.exchangeDeclare(commonExchangeName, BuiltinExchangeType.TOPIC);
+        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(adminQueue, commonExchangeName, "#"), this::createConsumer);
 
         handleUserInput(channel);
         return;
@@ -28,11 +29,11 @@ public class Administrator {
     }
 
     private void handleUserInput(Channel channel) throws IOException {
-        while (true) {
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+            while (true) {
                 System.out.print(">");
                 String message = br.readLine();
-                System.out.println("shipper.agency | .agency | shipper.");
+                System.out.println("shipper.agency | X.agency | shipper.X");
                 String key = br.readLine();
                 channel.basicPublish(administrativeExchangeName, key, null, message.getBytes("UTF-8"));
             }
