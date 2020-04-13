@@ -47,8 +47,6 @@ public class Shipper extends AdministrationUnit {
     }
 
     private Consumer createConsumer(final Channel channel) {
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-
         return new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
