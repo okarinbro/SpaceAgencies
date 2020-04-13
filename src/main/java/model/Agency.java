@@ -5,15 +5,11 @@ import com.rabbitmq.client.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeoutException;
 
 public class Agency extends AdministrationUnit {
-    //todo: handle threads better than copyonwrite ;)
     private final static String ADMIN_AGENCY_ROUTING_KEY = "*.agency";
-    private final Set<Order> tasksInProgress = new CopyOnWriteArraySet<Order>();
     private final String agencyName;
     private final String exchangeName;
     private final String administrativeExchangeName;
@@ -39,7 +35,6 @@ public class Agency extends AdministrationUnit {
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             String serviceType = br.readLine();
             Order order = new Order(agencyName, UUID.randomUUID().toString(), serviceType);
-            tasksInProgress.add(order);
             orderService(channel, exchangeName, order);
         }
     }
@@ -50,7 +45,6 @@ public class Agency extends AdministrationUnit {
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
                 System.out.println("Received confirmation: " + message);
-                //todo remove from set
             }
         };
     }

@@ -5,12 +5,18 @@ import com.rabbitmq.client.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Shipper extends AdministrationUnit {
     private final static String ADMIN_SHIPPER_ROUTING_KEY = "shipper.*";
+    private final Lock lock = new ReentrantLock(true);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(3);
     private final List<String> serviceTypes;
     private final String exchangeName;
     private final String administrativeExchangeName;
@@ -30,7 +36,7 @@ public class Shipper extends AdministrationUnit {
         for (String serviceType : serviceTypes) {
             handleService(channel, serviceType, exchangeName);
         }
-        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(UUID.randomUUID().toString(), administrativeExchangeName, "shipper.*"), this::createAdministrativeConsumer);
+        ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(UUID.randomUUID().toString(), administrativeExchangeName, ADMIN_SHIPPER_ROUTING_KEY), this::createAdministrativeConsumer);
 
     }
 
@@ -41,25 +47,38 @@ public class Shipper extends AdministrationUnit {
     }
 
     private Consumer createConsumer(final Channel channel) {
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+
         return new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
-                System.out.println("Received order: " + message);
-                workHard();
-                sendConfirmation(message);
-                channel.basicAck(envelope.getDeliveryTag(), false);
-
+                Future<?> submit = executorService.submit(() -> {
+                    System.out.println("Received order: " + message);
+                    workHard(message);
+                    try {
+                        sendConfirmation(message);
+                        lock.lock();
+                        channel.basicAck(envelope.getDeliveryTag(), false);
+                        lock.unlock();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
 
             //it's just for testing QoS in development phase
             //todo: get rid of that in the future
-            private void workHard() {
-                try {
-                    Thread.sleep(1000 * new Random().nextInt(10));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            private void workHard(String message) {
+                for (int i = 0; i < 5; i++) {
+                    System.out.println("WORKING ON MESSAGE:  " + message);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
+
             }
 
             private void sendConfirmation(String message) throws IOException {
