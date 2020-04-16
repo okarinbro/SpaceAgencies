@@ -1,15 +1,22 @@
 package model;
 
+import com.google.common.collect.ImmutableMap;
 import com.rabbitmq.client.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
 public class Administrator {
     private final String administrativeExchangeName;
     private final String commonExchangeName;
+    private final ImmutableMap<String, String> routingKeys = new ImmutableMap.Builder<String, String>()
+            .put("all", "shipper.agency")
+            .put("agencies", "X.agency")
+            .put("shippers", "shipper.X")
+            .build();
 
     public Administrator(String administrativeExchangeName, String commonExchangeName) {
         this.administrativeExchangeName = administrativeExchangeName;
@@ -22,10 +29,7 @@ public class Administrator {
         channel.exchangeDeclare(administrativeExchangeName, BuiltinExchangeType.TOPIC);
         channel.exchangeDeclare(commonExchangeName, BuiltinExchangeType.TOPIC);
         ConsumptionRunner.startConsumingWithAutoAck(channel, new ConsumeSettings(adminQueue, commonExchangeName, "#"), this::createConsumer);
-
         handleUserInput(channel);
-        return;
-
     }
 
     private void handleUserInput(Channel channel) throws IOException {
@@ -33,9 +37,9 @@ public class Administrator {
             while (true) {
                 System.out.print(">");
                 String message = br.readLine();
-                System.out.println("shipper.agency | X.agency | shipper.X");
+                System.out.println("all | agencies | shippers");
                 String key = br.readLine();
-                channel.basicPublish(administrativeExchangeName, key, null, message.getBytes("UTF-8"));
+                channel.basicPublish(administrativeExchangeName, routingKeys.get(key), null, message.getBytes(StandardCharsets.UTF_8));
             }
         }
     }
@@ -43,8 +47,8 @@ public class Administrator {
     private Consumer createConsumer(Channel channel) {
         return new DefaultConsumer(channel) {
             @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                String message = new String(body, "UTF-8");
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
+                String message = new String(body, StandardCharsets.UTF_8);
                 System.out.println("Received copy of message: " + message);
             }
         };

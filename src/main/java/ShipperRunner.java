@@ -21,8 +21,9 @@ public class ShipperRunner {
                 System.out.print(">");
                 secondService = ServiceType.fromString(br.readLine());
                 if (areArgumentsValid(firstService, secondService)) {
-                    System.out.println("Arguments are invalid");
                     break;
+                } else {
+                    System.out.println("Arguments are invalid");
                 }
             }
             Shipper shipper = new Shipper(ImmutableList.of(firstService, secondService), "exchange1", "adminExchange");

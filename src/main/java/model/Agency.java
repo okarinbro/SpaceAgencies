@@ -5,6 +5,7 @@ import com.rabbitmq.client.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
@@ -46,14 +47,14 @@ public class Agency extends AdministrationUnit {
     private Consumer createConsumer(Channel channel) {
         return new DefaultConsumer(channel) {
             @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                String message = new String(body, "UTF-8");
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
+                String message = new String(body, StandardCharsets.UTF_8);
                 System.out.println("Received confirmation: " + message);
             }
         };
     }
 
     private void orderService(Channel channel, String exchangeName, Order order) throws IOException {
-        channel.basicPublish(exchangeName, order.getServiceType().toString(), null, order.createMessage().getBytes("UTF-8"));
+        channel.basicPublish(exchangeName, order.getServiceType().toString(), null, order.createMessage().getBytes(StandardCharsets.UTF_8));
     }
 }
