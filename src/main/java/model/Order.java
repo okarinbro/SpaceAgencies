@@ -6,9 +6,9 @@ public class Order {
     private final String orderId;
     private final ServiceType serviceType;
 
-    public Order(String agencyName, String internalOrderId, String serviceType) {
+    public Order(String agencyName, String internalOrderId, ServiceType serviceType) {
         this.orderId = agencyName + "###" + internalOrderId;
-        this.serviceType = ServiceType.fromString(serviceType);
+        this.serviceType = serviceType;
     }
 
     public String createMessage() {

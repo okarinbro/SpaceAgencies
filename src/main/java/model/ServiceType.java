@@ -2,12 +2,12 @@ package model;
 
 import com.google.common.collect.ImmutableSet;
 
-import java.util.Arrays;
-
 public enum ServiceType {
-    PersonTransport, CargoTransport, SatelliteTransport;
+    PersonTransport, CargoTransport, SatelliteTransport, Unknown;
 
-    static ServiceType fromString(String serviceType) {
+    final static ImmutableSet<String> legalArgs = ImmutableSet.of("ct", "pt", "st");
+
+    public static ServiceType fromString(String serviceType) {
         if (ImmutableSet.of("PersonTransport", "pt").contains(serviceType)) {
             return PersonTransport;
         } else if (ImmutableSet.of("CargoTransport", "ct").contains(serviceType)) {
@@ -15,8 +15,7 @@ public enum ServiceType {
         } else if (ImmutableSet.of("SatelliteTransport", "st").contains(serviceType)) {
             return SatelliteTransport;
         } else {
-            throw new IllegalStateException(String.format("Service type: %s is not supported, try: ", serviceType)
-                    + Arrays.toString(ServiceType.values()));
+            return Unknown;
         }
     }
 }

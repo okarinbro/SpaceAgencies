@@ -33,7 +33,11 @@ public class Agency extends AdministrationUnit {
         while (true) {
             System.out.println("Type service type below (ct, pt, st)");
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            String serviceType = br.readLine();
+            ServiceType serviceType = ServiceType.fromString(br.readLine());
+            if (serviceType.equals(ServiceType.Unknown)) {
+                System.out.println("Illegal argument");
+                continue;
+            }
             Order order = new Order(agencyName, UUID.randomUUID().toString(), serviceType);
             orderService(channel, exchangeName, order);
         }

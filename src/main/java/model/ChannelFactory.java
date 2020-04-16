@@ -19,6 +19,5 @@ class ChannelFactory {
         Channel channel = createSimpleChannel();
         channel.basicQos(1);
         return channel;
-
     }
 }
