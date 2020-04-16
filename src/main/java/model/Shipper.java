@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
 public class Shipper extends AdministrationUnit {
@@ -51,7 +50,7 @@ public class Shipper extends AdministrationUnit {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
                 String message = new String(body, StandardCharsets.UTF_8);
-                Future<?> submit = executorService.submit(() -> {
+                executorService.submit(() -> {
                     System.out.println("Received order: " + message);
                     workHard(message);
                     try {
